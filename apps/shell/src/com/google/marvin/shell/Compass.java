@@ -35,7 +35,7 @@ public class Compass {
         ctx = context;
         sensorOk = true;
         sensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
-        Sensor compassSensor = sensorManager.getDefaultSensor(SensorManager.SENSOR_ORIENTATION);
+        Sensor compassSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);        
         sensorManager.registerListener(mListener, compassSensor, SensorManager.SENSOR_DELAY_GAME);
     }
 

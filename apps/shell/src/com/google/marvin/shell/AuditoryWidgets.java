@@ -23,6 +23,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -41,6 +43,7 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 // Most of the logic for determining strength levels is based on the code here:
 // http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=services/java/com/android/server/status/StatusBarPolicy.java
@@ -313,14 +316,26 @@ public class AuditoryWidgets {
     }
 
     public void launchVoiceSearch() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
-        try {
-            parent.startActivityForResult(intent, MarvinShell.REQUEST_CODE_VOICE_RECO);
-        } catch (ActivityNotFoundException anf) {
-            parent.tts.speak(parent.getString(R.string.search_not_available),
-                    TextToSpeech.QUEUE_FLUSH, null);
+        final PackageManager packageManager = parent.getPackageManager();
+        Intent intent = new Intent("android.speech.action.WEB_SEARCH");
+        List<ResolveInfo> resolveInfo =
+                packageManager.queryIntentActivities(intent,
+                        PackageManager.MATCH_DEFAULT_ONLY);
+        // Default to Google Now voice search if it is available.
+        if (resolveInfo.size() > 0) {
+            parent.startActivity(intent);
+            return;
+        } else {
+            intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(
+                    RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+            try {
+                parent.startActivityForResult(intent, MarvinShell.REQUEST_CODE_VOICE_RECO);
+            } catch (ActivityNotFoundException anf) {
+                parent.tts.speak(parent.getString(R.string.search_not_available),
+                        TextToSpeech.QUEUE_FLUSH, null);
+            }
         }
     }
 

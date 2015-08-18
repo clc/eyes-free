@@ -19,7 +19,7 @@ package com.google.marvin.shell;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -47,6 +47,7 @@ import com.googlecode.eyesfree.utils.FeedbackController;
  * @author clchen@google.com (Charles L. Chen)
  * @author sainsley@google.com (Sam Ainsley)
  */
+@SuppressLint("NewApi")
 public abstract class ChooserView<T> extends TextView {
     // BEGIN OF WORKAROUND FOR BACKWARDS COMPATIBILITY (up to Donut)
     private static Method MotionEvent_getX;
@@ -328,6 +329,7 @@ public abstract class ChooserView<T> extends TextView {
         String input = "";
         switch (keyCode) {
             case KeyEvent.KEYCODE_MENU:
+            case KeyEvent.KEYCODE_DVR:
                 return false;
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 nextItem();

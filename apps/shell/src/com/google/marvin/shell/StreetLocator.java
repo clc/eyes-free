@@ -45,7 +45,7 @@ public class StreetLocator {
     private static final String ENCODING = "UTF-8";
 
     // URL for obtaining reverse geocoded location
-    private static final String URL_GEO_STRING = "http://maps.google.com/maps/geo?";
+    private static final String URL_GEO_STRING = "https://maps.google.com/maps/api/geocode/json?sensor=true&";
 
     public StreetLocator(StreetLocatorListener callback) {
         cb = callback;
@@ -85,10 +85,10 @@ public class StreetLocator {
         try {
             String resp = getResult(makeGeoURL(lat, lon));
             JSONObject jsonObj = new JSONObject(resp);
-            int code = jsonObj.getJSONObject("Status").getInt("code");
-            if (code == 200) {
+            String code = jsonObj.getString("status");
+            if (code.equals("OK")) {
                 return extendShorts(
-                        jsonObj.getJSONArray("Placemark").getJSONObject(0).getString("address"));
+                        jsonObj.getJSONArray("results").getJSONObject(0).getString("formatted_address"));
             }
         } catch (MalformedURLException mue) {
             Log.d("Locator", "Malformed URL: " + mue.getMessage());
@@ -102,7 +102,7 @@ public class StreetLocator {
 
     /**
      * Sends a request to the specified URL and obtains the result from the
-     * sever.
+     * server.
      *
      * @param url The URL to connect to
      * @return the server response
@@ -129,7 +129,7 @@ public class StreetLocator {
      */
     private URL makeGeoURL(double lat, double lon) throws MalformedURLException {
         StringBuilder url = new StringBuilder();
-        url.append(URL_GEO_STRING).append("q=").append(lat).append(",").append(lon);
+        url.append(URL_GEO_STRING).append("latlng=").append(lat).append(",").append(lon);
         return new URL(url.toString());
     }
 

@@ -23,8 +23,6 @@ public class TalkContactChooserActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        String imWhere = ContactsContract.CommonDataKinds.Im.PROTOCOL + " = "
-                + ContactsContract.CommonDataKinds.Im.PROTOCOL_GOOGLE_TALK;
         mCursor = this.getContentResolver().query(
                 android.provider.ContactsContract.Data.CONTENT_URI, null, null, null, null);
         ListAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2,
