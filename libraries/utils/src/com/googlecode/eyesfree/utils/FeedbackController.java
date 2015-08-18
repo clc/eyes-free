@@ -32,7 +32,6 @@ import android.util.SparseArray;
 import android.util.SparseIntArray;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -91,36 +90,6 @@ public class FeedbackController {
     private float mVolume = DEFAULT_VOLUME;
 
     /**
-     * Used with {@link #playMidiScale(int, int, int, int, int, int)} to
-     * generate a major scale
-     */
-    public static final int MIDI_SCALE_TYPE_MAJOR = 1;
-
-    /**
-     * Used with {@link #playMidiScale(int, int, int, int, int, int)} to
-     * generate a natural minor scale
-     */
-    public static final int MIDI_SCALE_TYPE_NATURAL_MINOR = 2;
-
-    /**
-     * Used with {@link #playMidiScale(int, int, int, int, int, int)} to
-     * generate a harmonic minor scale
-     */
-    public static final int MIDI_SCALE_TYPE_HARMONIC_MINOR = 3;
-
-    /**
-     * Used with {@link #playMidiScale(int, int, int, int, int, int)} to
-     * generate a melodic minor scale
-     */
-    public static final int MIDI_SCALE_TYPE_MELODIC_MINOR = 4;
-
-    /**
-     * Used with {@link #playMidiScale(int, int, int, int, int, int)} to
-     * generate a pentatonic major scale
-     */
-    public static final int MIDI_SCALE_TYPE_PENTATONIC = 5;
-
-    /**
      * Constructs and initializes a new feedback controller.
      */
     public FeedbackController(Context context) {
@@ -128,25 +97,10 @@ public class FeedbackController {
         mResources = context.getResources();
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
         mSoundPool = new SoundPool(NUMBER_OF_CHANNELS, DEFAULT_STREAM, 1);
-        mSoundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
-            @Override
-            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-                if (status == 0) {
-                    synchronized (mPostLoadPlayables) {
-                        if (mPostLoadPlayables.contains(sampleId)) {
-                            soundPool.play(
-                                    sampleId, DEFAULT_VOLUME, DEFAULT_VOLUME, 1, 0, DEFAULT_RATE);
-                            mPostLoadPlayables.remove(Integer.valueOf(sampleId));
-                        }
-                    }
-                }
-            }
-        });
         mHandler = new Handler();
 
         mResourceIdToSoundMap.clear();
         mResourceIdToVibrationPatternMap.clear();
-        MidiUtils.purgeMidiTempFiles(context);
     }
 
     /**
@@ -193,7 +147,6 @@ public class FeedbackController {
     public void shutdown() {
         mVibrator.cancel();
         mSoundPool.release();
-        MidiUtils.purgeMidiTempFiles(mContext);
     }
 
     /**
@@ -382,7 +335,7 @@ public class FeedbackController {
      *            pentatonic) is a complete scale. 8 (or 6 pentatonic) for a
      *            resolved scale.
      * @param scaleType The MIDI_SCALE_TYPE_* constant associated with the type
-     *            of scale to play.
+     *            of scale to play as defined in {@link MidiUtils}.
      *
      * @return {@code true} if successful, {@code false} otherwise.
      */
@@ -390,55 +343,6 @@ public class FeedbackController {
             int pitchesToPlay, int scaleType) {
         if (!mAuditoryEnabled) {
             return false;
-        }
-
-        final int[] midiSequence = MidiUtils.generateMidiScale(
-                program, velocity, duration, startingPitch, pitchesToPlay, scaleType);
-        if (midiSequence == null) {
-            return false;
-        }
-
-        final File file = MidiUtils.generateMidiFileFromArray(mContext, midiSequence);
-        if (file == null) {
-            return false;
-        }
-
-        final MediaPlayer scalePlayer = new MediaPlayer();
-        scalePlayer.setOnPreparedListener(new OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                scalePlayer.start();
-            }
-        });
-
-        scalePlayer.setOnCompletionListener(new OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                scalePlayer.release();
-                file.delete();
-            }
-        });
-
-        // Use the FD method of setting the MediaPlayer data source for
-        // backwards compatibility.
-        FileInputStream in = null;
-        try {
-            in = new FileInputStream(file);
-            scalePlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            scalePlayer.setDataSource(in.getFD());
-            scalePlayer.prepareAsync();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-            }
         }
 
         return true;
@@ -532,18 +436,7 @@ public class FeedbackController {
      * @return the sound ID for this sound, or {@code -1} on error.
      */
     public int loadMidiSoundFromArray(int[] notes, boolean playOnLoad) {
-        final File midiFile = MidiUtils.generateMidiFileFromArray(mContext, notes);
-
-        if (midiFile == null) {
-            return -1;
-        }
-
-        final int soundId = mSoundPool.load(midiFile.getPath(), 1);
-        if (playOnLoad) {
-            mPostLoadPlayables.add(soundId);
-        }
-
-        return soundId;
+        return -1;
     }
 
     /**

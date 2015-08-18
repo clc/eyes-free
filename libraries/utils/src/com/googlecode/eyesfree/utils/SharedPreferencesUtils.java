@@ -18,6 +18,7 @@ package com.googlecode.eyesfree.utils;
 
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.os.Build;
 
 /**
  * Utility methods for interacting with {@link SharedPreferences} objects.
@@ -103,5 +104,32 @@ public class SharedPreferencesUtils {
         final SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(res.getString(keyResId), value);
         editor.commit();
+    }
+
+    /**
+     * Stores the value of a boolean preference async. On Froyo and below it uses a background
+     * thread for this. That means commits can happen out of order
+     *
+     * @param prefs Shared preferences from which to obtain the value.
+     * @param res Resources from which to obtain the key and default value.
+     * @param keyResId Resource identifier for the key.
+     * @param value The value to store.
+     */
+    public static void storeBooleanAsync(final SharedPreferences prefs, final String key,
+            final boolean value) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+            final SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean(key, value);
+            editor.apply();
+        } else {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    final SharedPreferences.Editor editor = prefs.edit();
+                    editor.putBoolean(key, value);
+                    editor.commit();
+                }
+            }).start();
+        }
     }
 }

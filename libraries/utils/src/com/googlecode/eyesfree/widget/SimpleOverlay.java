@@ -39,7 +39,7 @@ import android.widget.FrameLayout;
 public class SimpleOverlay {
     private final Context mContext;
     private final WindowManager mWindowManager;
-    private final ViewGroup mContentView;
+    public final ViewGroup mContentView;
     private final LayoutParams mParams;
     private final int mId;
 
