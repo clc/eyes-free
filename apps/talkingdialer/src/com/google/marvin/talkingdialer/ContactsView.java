@@ -16,6 +16,7 @@
 
 package com.google.marvin.talkingdialer;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.database.CursorIndexOutOfBoundsException;
@@ -105,6 +106,7 @@ public class ContactsView extends TextView {
 
     private boolean inVideoMode = false;
 
+    @SuppressLint("NewApi")
     public ContactsView(TalkingDialer context, final boolean inVideoMode) {
         super(context);
 
@@ -350,6 +352,7 @@ public class ContactsView extends TextView {
                 dialActionHandler();
                 return true;
             case KeyEvent.KEYCODE_MENU:
+            case KeyEvent.KEYCODE_DVR:
                 // Don't allow user to switch views when selecting video contact
                 if (parent.mIntentMode != TalkingDialer.SELECT_EMAIL) {
                     parent.switchToDialingView();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2014 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -235,7 +235,7 @@ public class AccessibilityNodeInfoUtils {
         }
 
         // Special case for web content.
-        if (WebInterfaceUtils.hasWebContent(node)) {
+        if (WebInterfaceUtils.supportsWebActions(node)) {
             LogUtils.log(AccessibilityNodeInfoUtils.class, Log.VERBOSE,
                     "Speaking, has web content");
             return true;
@@ -849,11 +849,11 @@ public class AccessibilityNodeInfoUtils {
      * @param node The root node to traverse from.
      * @param filter The filter to satisfy.
      * @param maxResults The number of results to stop searching after
-     * @return The first n nodes reached via BFS traversal that satisfies the
+     * @return Returns all nodes reached via BFS traversal that satisfies the
      *         filter.
      */
     public static List<AccessibilityNodeInfoCompat> searchAllFromBfs(Context context,
-            AccessibilityNodeInfoCompat node, NodeFilter filter, int maxResults) {
+            AccessibilityNodeInfoCompat node, NodeFilter filter) {
         if (node == null) {
             return null;
         }
@@ -865,7 +865,7 @@ public class AccessibilityNodeInfoUtils {
 
         queue.add(AccessibilityNodeInfoCompat.obtain(node));
 
-        while (!queue.isEmpty() && toReturn.size() < maxResults) {
+        while (!queue.isEmpty()) {
             final AccessibilityNodeInfoCompat item = queue.removeFirst();
 
             if (filter.accept(context, item)) {

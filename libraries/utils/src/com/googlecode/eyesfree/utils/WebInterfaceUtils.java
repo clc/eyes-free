@@ -1,17 +1,17 @@
 /*
- * Copyright (C) 2012 Google Inc.
+ * Copyright (C) 2014 Google Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.googlecode.eyesfree.utils;
@@ -92,20 +92,23 @@ public class WebInterfaceUtils {
     public static final int ACTION_TOGGLE_INCREMENTAL_SEARCH = -5;
 
     /**
-     * HTML element argument to use with {@link #performNavigationToHtmlElementAction(AccessibilityNodeInfoCompat,
+     * HTML element argument to use with
+     * {@link #performNavigationToHtmlElementAction(AccessibilityNodeInfoCompat,
      * int, String)} to instruct ChromeVox to move to the next or previous page
      * section.
      */
     public static final String HTML_ELEMENT_MOVE_BY_SECTION = "SECTION";
 
     /**
-     * HTML element argument to use with {@link #performNavigationToHtmlElementAction(AccessibilityNodeInfoCompat,
+     * HTML element argument to use with
+     * {@link #performNavigationToHtmlElementAction(AccessibilityNodeInfoCompat,
      * int, String)} to instruct ChromeVox to move to the next or previous list.
      */
     public static final String HTML_ELEMENT_MOVE_BY_LIST = "LIST";
 
     /**
-     * HTML element argument to use with {@link #performNavigationToHtmlElementAction(AccessibilityNodeInfoCompat,
+     * HTML element argument to use with
+     * {@link #performNavigationToHtmlElementAction(AccessibilityNodeInfoCompat,
      * int, String)} to instruct ChromeVox to move to the next or previous
      * control.
      */
@@ -114,7 +117,7 @@ public class WebInterfaceUtils {
     /**
      * Sends an instruction to ChromeVox to read the specified HTML element in
      * the given direction within a node.
-     *
+     * <p>
      * WARNING: Calling this method with a source node of
      * {@link android.webkit.WebView} has the side effect of closing the IME
      * if currently displayed.
@@ -160,7 +163,7 @@ public class WebInterfaceUtils {
     /**
      * Sends an instruction to ChromeVox to move within a page at a specified
      * granularity in a given direction.
-     *
+     * <p>
      * WARNING: Calling this method with a source node of
      * {@link android.webkit.WebView} has the side effect of closing the IME
      * if currently displayed.
@@ -255,13 +258,79 @@ public class WebInterfaceUtils {
      * Determines whether or not the given node contains web content.
      *
      * @param node The node to evaluate
-     * @return {@code true} if the node contains web content, {@code false}
-     *         otherwise
+     * @return {@code true} if the node contains web content, {@code false} otherwise
      */
-    public static boolean hasWebContent(AccessibilityNodeInfoCompat node) {
+    public static boolean supportsWebActions(AccessibilityNodeInfoCompat node) {
         return AccessibilityNodeInfoUtils.supportsAnyAction(node,
                 AccessibilityNodeInfoCompat.ACTION_NEXT_HTML_ELEMENT,
                 AccessibilityNodeInfoCompat.ACTION_PREVIOUS_HTML_ELEMENT);
+    }
+
+    /**
+     * Determines whether or not the given node contains native web content (and not ChromeVox).
+     *
+     * @param node The node to evaluate
+     * @return {@code true} if the node contains native web content, {@code false} otherwise
+     */
+    public static boolean hasNativeWebContent(AccessibilityNodeInfoCompat node) {
+        if (node == null) {
+            return false;
+        }
+
+        if (!supportsWebActions(node)) {
+            return false;
+        }
+
+        // ChromeVox does not have sub elements, so if the parent element also has web content
+        // this cannot be ChromeVox.
+        AccessibilityNodeInfoCompat parent = node.getParent();
+        if (supportsWebActions(parent)) {
+            if (parent != null) {
+                parent.recycle();
+            }
+            return true;
+        }
+
+        if (parent != null) {
+            parent.recycle();
+        }
+
+        // ChromeVox never has child elements
+        return node.getChildCount() > 0;
+    }
+
+    /**
+     * Determines whether or not the given node contains ChromeVox content.
+     *
+     * @param node The node to evaluate
+     * @return {@code true} if the node contains ChromeVox content, {@code false} otherwise
+     */
+    public static boolean hasLegacyWebContent(AccessibilityNodeInfoCompat node) {
+        if (node == null) {
+            return false;
+        }
+
+        if (!supportsWebActions(node)) {
+            return false;
+        }
+
+        // ChromeVox does not have sub elements, so if the parent element also has web content
+        // this cannot be ChromeVox.
+        AccessibilityNodeInfoCompat parent = node.getParent();
+        if (supportsWebActions(parent)) {
+            if (parent != null) {
+                parent.recycle();
+            }
+
+            return false;
+        }
+
+        if (parent != null) {
+            parent.recycle();
+        }
+
+        // ChromeVox never has child elements
+        return node.getChildCount() == 0;
     }
 
     /**
@@ -275,7 +344,8 @@ public class WebInterfaceUtils {
     }
 
     /**
-     * Returns whether the given node has navigable web content.
+     * Returns whether the given node has navigable web content, either legacy (ChromeVox) or native
+     * web content.
      *
      * @param context The parent context.
      * @param node The node to check for web content.
@@ -283,6 +353,7 @@ public class WebInterfaceUtils {
      */
     public static boolean hasNavigableWebContent(
             Context context, AccessibilityNodeInfoCompat node) {
-        return (hasWebContent(node) && isScriptInjectionEnabled(context));
+        return (supportsWebActions(node) && isScriptInjectionEnabled(context))
+                || hasNativeWebContent(node);
     }
 }

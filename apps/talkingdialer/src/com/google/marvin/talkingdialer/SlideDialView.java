@@ -644,6 +644,7 @@ public class SlideDialView extends TextView {
 
         switch (keyCode) {
             case KeyEvent.KEYCODE_MENU:
+            case KeyEvent.KEYCODE_DVR:
                 mParent.switchToContactsView(false);
                 return true;
             case KeyEvent.KEYCODE_SEARCH:

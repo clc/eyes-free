@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2014 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,11 +51,6 @@ public class ClassLoadingManager {
             new HashMap<String, HashSet<String>>();
 
     /**
-     * Cache of installed packages to avoid class loading attempts
-     */
-    private final HashSet<String> mInstalledPackagesSet = new HashSet<String>();
-
-    /**
      * The singleton instance of this class.
      *
      * @return The singleton instance of this class.
@@ -73,7 +68,10 @@ public class ClassLoadingManager {
      * @param context The {@link Context} to use for monitor registration
      */
     public void init(Context context) {
-        buildInstalledPackagesCache(context);
+        if (!mNotFoundClassesMap.isEmpty()) {
+            buildInstalledPackagesCache(context);
+        }
+
         mPackageMonitor.register(context);
     }
 
@@ -81,7 +79,6 @@ public class ClassLoadingManager {
      * Clears the package cache and unregisteres the package monitor
      */
     public void shutdown() {
-        clearInstalledPackagesCache();
         mClassNameToClassMap.clear();
         mPackageMonitor.unregister();
     }
@@ -104,29 +101,8 @@ public class ClassLoadingManager {
      * @param packageName The package name to add.
      */
     private void addInstalledPackageToCache(String packageName) {
-        synchronized (mInstalledPackagesSet) {
-            mInstalledPackagesSet.add(packageName);
+        synchronized (mNotFoundClassesMap) {
             mNotFoundClassesMap.remove(packageName);
-        }
-    }
-
-    /**
-     * Removes the specified package from the installed package cache.
-     *
-     * @param packageName The package name to remove.
-     */
-    private void removeInstalledPackageFromCache(String packageName) {
-        synchronized (mInstalledPackagesSet) {
-            mInstalledPackagesSet.remove(packageName);
-        }
-    }
-
-    /**
-     * Clears the installed package cache.
-     */
-    private void clearInstalledPackagesCache() {
-        synchronized (mInstalledPackagesSet) {
-            mInstalledPackagesSet.clear();
         }
     }
 
@@ -169,7 +145,7 @@ public class ClassLoadingManager {
 
         // If we failed loading this class once, don't bother trying again.
         HashSet<String> notFoundClassesSet = null;
-        synchronized (mInstalledPackagesSet) {
+        synchronized (mNotFoundClassesMap) {
             notFoundClassesSet = mNotFoundClassesMap.get(packageNameStr);
             if ((notFoundClassesSet != null) && notFoundClassesSet.contains(classNameStr)) {
                 return null;
@@ -284,7 +260,7 @@ public class ClassLoadingManager {
 
         @Override
         protected void onPackageRemoved(String packageName) {
-            removeInstalledPackageFromCache(packageName);
+            // Do nothing.
         }
 
         @Override
