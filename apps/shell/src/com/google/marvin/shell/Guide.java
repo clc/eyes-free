@@ -39,7 +39,7 @@ public class Guide implements Runnable, StreetLocatorListener {
         @Override
         public void run() {
             try {
-                Thread.sleep(10000);
+                Thread.sleep(1000);
                 if (!gotResponse) {
                     String heading = compass.getCurrentHeading();
                     if (heading.length() > 1) {
@@ -174,8 +174,6 @@ public class Guide implements Runnable, StreetLocatorListener {
         parent = parentActivity;
         locator = new StreetLocator(this);
         compass = new Compass(parent);
-        LocationManager locationManager = (LocationManager) parent.getSystemService(
-                Context.LOCATION_SERVICE);
     }
 
     public void speakLocation(boolean useGps) {

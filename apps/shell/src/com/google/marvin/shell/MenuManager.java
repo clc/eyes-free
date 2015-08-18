@@ -291,6 +291,7 @@ public final class MenuManager extends HashMap<String, Menu> {
                         parcel.setDataPosition(0);
                         // configParcel.setDataPosition(0);
                         widgetInfo = new AppWidgetProviderInfo(parcel);
+                        fis.close();
                     } catch (Exception e) {
                         Log.e("MenuManager", "EXCEPTION: " + e);
                     }

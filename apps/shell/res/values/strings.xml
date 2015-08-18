@@ -423,8 +423,12 @@
     <string name="talk_disabled">Google Talk is Not Running. Please Stay Signed Into Talk to Make Video Calls.</string>
     <!--
       Source: Label for when menu item intent is not valid
-      Description: Warn users that intent is not valid and will fail 
+      Description: Warn users that intent is not valid and will fail
     -->
     <string name="item_invalid">Shortcut is not valid. Please consider removing this menu item.</string>
-
+    <!--
+      Source: Label for when widget menu item intent is not valid
+      Description: Warn users that widget intent is not valid and will fail
+    -->
+    <string name="widget_invalid">Widget is no longer valid. Please reconfigure this widget.</string>
 </resources>
