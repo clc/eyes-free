@@ -127,9 +127,9 @@ public class MarvinShell extends Activity {
     public static final String HOME_MENU = "Home";
 
     public static final int DIALOG_RENAME_MENU = 1312341;
-    
+
     private PowerManager mPowerManager; //  So we can check screenOn
-    
+
     private int activeMode;
 
     private PackageManager pm;
@@ -502,7 +502,7 @@ public class MarvinShell extends Activity {
      */
     private static Intent makeClassLaunchIntent(String packageName, String className) {
         return new Intent("android.intent.action.MAIN").addCategory("android.intent.category.LAUNCHER")
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK).setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             .setClassName(packageName, className);
     }
 
